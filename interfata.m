@@ -22,7 +22,7 @@ function varargout = interfata(varargin)
 
 % Edit the above text to modify the response to help interfata
 
-% Last Modified by GUIDE v2.5 27-Apr-2023 13:38:56
+% Last Modified by GUIDE v2.5 28-Apr-2023 21:01:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -131,40 +131,84 @@ end
 
 % --- Executes on selection change in Operatii.
 function Operatii_Callback(hObject, eventdata, handles)
-continut=cellstr(get(hObject,'String'));
-c=continut{get(hObject, 'Value')}
-load([tempdir 'b']);
 
-if (strcmp(c,'Oglindire pe axa X'))
-    I= flipud(b);
-elseif (strcmp(c,'Oglindire pe axa Y'))
-    I= fliplr(b);
-elseif (strcmp(c,'Umplerea golurilor'))
-    I = imfill(b,'holes');
-elseif (strcmp(c,'Erodarea'))
+cale='C:\Users\Petruca Bianca Ioana\Desktop\UTCN\anul 4\semestrul 2\Analiza și Prelucrarea Imaginilor Biomedicale\Proiect\ct\';
+b=imread([cale '1 (27).png']); 
+
+ operatia_selectata = get (hObject, 'Value');
+
+ switch operatia_selectata
+     case 1 % oglindire pe axa X 
+         b = flipud(b);
+     case 2 % oglindire pe axa Y 
+         b= fliplr(b);
+     case 3 % umplerea golurilor 
+         b = imfill(b, 'holes');
+     case 4 % erodarea 
+         ES= strel('arbitrary',eye(8));
+         b=imerode(b,ES);
+     case 5 % dilatarea 
+         ES= strel('arbitrary',eye(8));
+         b=imdilate(b,ES);
+     case 6 % gradientul interior 
+         ES= strel('arbitrary',eye(8));
+         erod = imerode(b, ES);
+         b = b - erod; 
+     case 7 % gradientul exterior 
+         ES= strel('arbitrary',eye(8));
+         dil = imdilate(b, ES);
+         b = dil - b;
+     case 8 % laplacian 
+         ES= strel('arbitrary',eye(8));
+         erod = imerode(b, ES);
+         dil = imdilate(b, ES);
+        b  = b - erod; 
+        b = dil - b;
+         GI = b-erod;
+         GE = dil - b;
+         b = GE + GI; 
+ end 
+
+axes(handles.Axa);
+imshow(b); axis off
+
+
+cale='C:\Users\Petruca Bianca Ioana\Desktop\UTCN\anul 4\semestrul 2\Analiza și Prelucrarea Imaginilor Biomedicale\Proiect\ct\';
+p=imread([cale '1 (37).png']); 
+save([tempdir 'p'],'p')
+
+if(strcmp(p, 'Laplacianul_morfologic'))
     ES= strel('arbitrary',eye(8));
-    I=imerode(b,ES);
-elseif (strcmp(c,'Dilatarea'))
-    ES= strel('arbitrary',eye(8));
-    I=imdilate(b,ES);
-elseif (strcmp(c,'Gradientul interior'))
-   ES= strel('arbitrary',eye(8));
-    I=imerode(b,ES);
-    GI = b-I;
-elseif (strcmp(c,'Gradientul exterior'))
-    ES= strel('arbitrary',eye(8));
-    I=imdilate(b,ES);
-    GE= I- b;
-else (strcmp(c,'Delimitarea obiectelor folosind Laplacianul morfologic'))
-     ES= strel('arbitrary',eye(8));
-    I=imdilate(b,ES);
-     I=imerode(b,ES);
-    GI = b-I;
-    GE= I- b;
-    I= GE + GI;
+    erod = imerode(p, ES);
+    p = p - erod; 
+    dil = imdilate(p, ES);
+    p = dil - p;
+    GI = p-erod;
+    GE = dil - p;
+    p = GE + GI; 
+end 
+
+
+
+
+butoane = get(handles.prelucrare,'SelectedObject');
+selectare = get(butoane,'tag');
+switch selectare
+    case 'original'
+        val = 1;
+    case 'pre'
+        val = 2;
+end 
+if (val ==1)
+    axes(handles.Axa)
+    imshow(b); axis off;
+elseif (val == 2)
+    axes(handles.Axa)
+    imshow(p); axis off;
 end
 
-save([tempdir 'I', 'I'])
+
+
     % hObject    handle to Operatii (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -188,6 +232,14 @@ end
 
 % --- Executes on button press in original.
 function original_Callback(hObject, eventdata, handles)
+a=get(hObject,'Value');
+if(a==1)
+ load([tempdir 'b']);
+ axes(handles.Axa);
+ imshow(b); axis off;
+end
+
+
 % hObject    handle to original (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -195,10 +247,20 @@ function original_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of original
 
 
-% --- Executes on button press in IP.
-function IP_Callback(hObject, eventdata, handles)
-% hObject    handle to IP (see GCBO)
+% --- Executes on button press in pre.
+function pre_Callback(hObject, eventdata, handles)
+
+
+a=get(hObject,'Value');
+if(a==1)
+ load([tempdir 'p']);
+ axes(handles.Axa);
+ imshow(p); axis off;
+end
+
+
+% hObject    handle to pre (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of IP
+% Hint: get(hObject,'Value') returns toggle state of pre
